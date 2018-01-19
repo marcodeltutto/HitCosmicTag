@@ -43,7 +43,7 @@ namespace cosmictag {
  
   bool StopMuMichel::IsStopMuMichel(const cosmictag::SimpleCluster & cluster) {
 
-
+    
     //const int                    & _start_index      = cluster._start_index;
     //const std::vector<SimpleHit> & _s_hit_v          = cluster._s_hit_v;
     //const bool                   & _start_hit_is_set = cluster._start_hit_is_set;
@@ -103,6 +103,8 @@ namespace cosmictag {
       return false;
     }
 
+    
+
     // Check that the local linearity is less than threshold in the Bragg region
     double bragg_local_linearity = _linearity_v.at(bragg_index);
 
@@ -116,15 +118,15 @@ namespace cosmictag {
     // is above threshold. Exclude first hits as things can get funny
     // at the beginning. Also exclude last hits as we expect the muon 
     // to curve in the last region
-    /*
-    for (size_t i = offset; i < (size_t) bragg_index - _pre_post_window; i++) {
-      if (_linearity_v.at(i) < _local_linearity_threshold) {
-        if (_debug) std::cout << "[IsStopMuMichel] Local linearity at hit " << i << " (before Bragg) is " << _linearity_v.at(i)
-                              << " which is below threshold (" << _local_linearity_threshold << ")" << std::endl;
-        return false;
-      }
-    }
-    */
+    
+    //for (size_t i = offset; i < (size_t) bragg_index - _pre_post_window; i++) {
+    //  if (_linearity_v.at(i) < _local_linearity_threshold) {
+    //    if (_debug) std::cout << "[IsStopMuMichel] Local linearity at hit " << i << " (before Bragg) is " << _linearity_v.at(i)
+    //                          << " which is below threshold (" << _local_linearity_threshold << ")" << std::endl;
+    //    return false;
+    //  }
+    //}
+    
 
     // Check that the photon hits are below the maximum allowed
     int n_michel_hits = _dqds_slider.size() - bragg_index - 1;
@@ -142,21 +144,37 @@ namespace cosmictag {
     }
 
     // Get mean of first and last hits
-    //dqds_end.clear();
+    dqds_end.clear();
     dqds_end = _dqds_slider;
 
     // Remove first "_hits_to_remove" and last "_hits_to_remove" hits
-    /*if (offset > 0) {
-      dqds_end.erase(dqds_end.begin(), dqds_end.begin() + offset);
-    } else {
-      dqds_end.erase(dqds_end.begin(), dqds_end.begin() + _hits_to_remove);
-    }*/
-    std::cout << "_dqds_slider vector has size " << _dqds_slider.size() << std::endl;
-    std::cout << "dqds_end vector has size " << dqds_end.size() << std::endl;
+    //if (offset > 0) {
+    //  dqds_end.erase(dqds_end.begin(), dqds_end.begin() + offset);
+    //} else {
+    //  dqds_end.erase(dqds_end.begin(), dqds_end.begin() + _hits_to_remove);
+    //}
+
+    if (bragg_index - (_pre_post_window + 5) <= 0) {
+      CT_DEBUG() << "Not enough hits before Bragg. Bragg at " << bragg_index 
+                 << ", required " << (_pre_post_window + 5) << std::endl;
+      return false;
+    }
+
+    CT_DEBUG() << "_dqds_slider vector has size " << _dqds_slider.size() << std::endl;
+    CT_DEBUG() << "dqds_end vector has size " << dqds_end.size() << std::endl;
+
     dqds_end.erase(dqds_end.begin(), dqds_end.begin() + bragg_index - (_pre_post_window + 5));
     dqds_end.erase(dqds_end.end() - _hits_to_remove, dqds_end.end());
 
-    std::cout << "dqds_end vector has size " << dqds_end.size() << std::endl;
+    CT_DEBUG() << "dqds_end vector has size " << dqds_end.size() << std::endl;
+
+
+    // Assign to new vector
+    //dqds_end.clear();
+    //for (size_t i = bragg_index - (_pre_post_window + 5); i < _dqds_slider.size() - _hits_to_remove; i++) {
+    //  dqds_end.push_back(_dqds_slider.at(i));
+    //}
+    //std::cout << "dqds_end vector has size " << dqds_end.size() << std::endl;
 
     bragg_index = (_pre_post_window + 5);
 
@@ -164,20 +182,17 @@ namespace cosmictag {
       std::cout << "Not enough hits." << std::endl;
       return false;
     }
-    std::cout << "bragg index is " << bragg_index << std::endl;
-    std::cout << "at bragg index dqds_end vector is " << dqds_end.at(bragg_index) << std::endl;
+    CT_DEBUG() << "bragg index is " << bragg_index << std::endl;
+    CT_DEBUG() << "at bragg index dqds_end vector is " << dqds_end.at(bragg_index) << std::endl;
 
-    for (size_t i = 0; i < dqds_end.size(); i++) std::cout << i << ": dqds_end = " << dqds_end.at(i) << std::endl;
+    for (size_t i = 0; i < dqds_end.size(); i++) CT_DEBUG() << i << ": dqds_end = " << dqds_end.at(i) << std::endl;
 
-    std::cout << "here1, dqds_end.size() is " << dqds_end.size() << ", _pre_post_window is " << _pre_post_window << std::endl;
     double start_mean = std::accumulate(dqds_end.begin(), dqds_end.begin() + _pre_post_window, 0);
     start_mean /= _pre_post_window;
 
-    std::cout << "here2" << std::endl;
     double end_mean = std::accumulate(dqds_end.end() - _pre_post_window, dqds_end.end(), 0);
     end_mean /= _pre_post_window;
 
-    std::cout << "here3" << std::endl;
     int edge = bragg_index + 5;
 
     if (dqds_end.size() - edge < (size_t) _pre_post_window) {
@@ -187,7 +202,7 @@ namespace cosmictag {
       end_mean = std::accumulate(dqds_end.end() - (vector_size - edge), dqds_end.end(), 0);
       end_mean /= (double) vector_size - edge;
     }
-
+    
     double perc_diff = (start_mean - end_mean) / start_mean * 100.;
 
     CT_DEBUG() << "Start mean: " << start_mean 

@@ -38,7 +38,7 @@ namespace cosmictag{
     /// Default destructor
     ~StopMuBragg(){}
 
-    bool IsStopMuBragg(const cosmictag::SimpleCluster & cluster) const;
+    bool IsStopMuBragg(const cosmictag::SimpleCluster & cluster);
 
     void PrintConfig() const;
 
@@ -53,6 +53,11 @@ namespace cosmictag{
     int _min_muon_hits;
     double _local_linearity_threshold;
     double _perc_diff_cut;
+
+  private:
+
+    size_t _bragg_index;
+    double _bragg_dqds;
 
   };
   
