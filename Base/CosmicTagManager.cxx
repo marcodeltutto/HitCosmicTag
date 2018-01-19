@@ -14,7 +14,9 @@
 #include "DqDsSmootherFactory.h"
 #include "LocalLinearityCalculatorFactory.h"
 #include "CustomAlgoFactory.h"
-
+//#include "../Algorithms/StopMuMichel.h"
+//#include "../Algorithms/StopMuBragg.h"
+//#include "../Algorithms/CosmicSimpleMIP.h"
 
 namespace cosmictag {
 
@@ -250,8 +252,16 @@ namespace cosmictag {
       //CT_ERROR() << Form("Algorithm name %s not found!",name.c_str()) << std::endl;
       throw HitCosmicTagException();
     }
-    //return _custom_alg_m[name];
+    /*
+    if (name == "StupMuMichel")
+      return ((cosmictag::StopMuMichel*)_custom_alg_m[name])->IsStopMuMichel(_cluster);
 
+    if (name == "StopMuBragg")
+      return ((cosmictag::StopMuBragg*)_custom_alg_m[name])->IsStopMuBragg(_cluster);
+
+    if (name == "CosmicSimpleMIP")
+      return ((cosmictag::CosmicSimpleMIP*)_custom_alg_m[name])->IsCosmicSimpleMIP(_cluster);
+*/
     return false;
   }
 

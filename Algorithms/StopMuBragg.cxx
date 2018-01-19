@@ -34,7 +34,7 @@ namespace cosmictag {
   }
 
  
-  bool StopMuBragg::IsStopMuBragg(const cosmictag::SimpleCluster & cluster) const {
+  bool StopMuBragg::IsStopMuBragg(const cosmictag::SimpleCluster & cluster) {
 
 
     //const int                    & _start_index      = cluster._start_index;
@@ -57,21 +57,20 @@ namespace cosmictag {
 
     // Find the hits with the maximum dqds, that one will be the hit
     // where the Bragg peak is
-    size_t bragg_index;
     auto it_max = std::max_element(_dqds_slider.begin(), _dqds_slider.end());
-    bragg_index = it_max - _dqds_slider.begin();
-    double bragg_dqds = *it_max;
+    _bragg_index = it_max - _dqds_slider.begin();
+    _bragg_dqds = *it_max;
     for (bool flag = true; flag && it_max != _dqds_slider.end(); it_max++) {
-      if (*it_max < bragg_dqds) {
-        bragg_index = --it_max - _dqds_slider.begin();
+      if (*it_max < _bragg_dqds) {
+        _bragg_index = --it_max - _dqds_slider.begin();
         flag = false;
       }
     }
 
-    CT_DEBUG() << "Bragg peak hit index is " << bragg_index << std::endl;
+    CT_DEBUG() << "Bragg peak hit index is " << _bragg_index << std::endl;
 
     // Check that the number of muon hits are below the maximum allowed
-    int n_muon_hits = bragg_index + 1;
+    int n_muon_hits = _bragg_index + 1;
     if (n_muon_hits > _max_muon_hits) {
       CT_DEBUG() << "Number of muon hits is " << n_muon_hits
                  << " which is above maximum allowed (" << _max_muon_hits << ")" << std::endl;
@@ -89,7 +88,7 @@ namespace cosmictag {
     // so we want to ensure that the local linearity is not below threshold
     // in the Bragg region
     /*
-    double bragg_local_linearity = _linearity_v.at(bragg_index);
+    double bragg_local_linearity = _linearity_v.at(_bragg_index);
     if (bragg_local_linearity < _local_linearity_threshold) {
       if (_debug) std::cout << "[IsStopMuBragg] Local linearity is " << bragg_local_linearity
                             << " which is less than threshold (" << _local_linearity_threshold << ")" << std::endl;
